@@ -63,10 +63,14 @@ class couponsmsAdminController extends couponsms
 	{
 		$oModuleController = getController('module');
 		$obj = Context::getRequestVars();
+
 		$config = new stdClass();
 		$config->layout_srl = $obj->layout_srl;
 		$config->skin = $obj->skin;
+		$config->sending_method = $obj->sending_method;
+		$config->sender_key = $obj->sender_key;
 		$this->setMessage('success_updated');
+
 		$oModuleController->updateModuleConfig('couponsms', $config);
 		if(!in_array(Context::getRequestMethod(),array('XMLRPC','JSON')))
 		{

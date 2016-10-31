@@ -6,6 +6,23 @@
 
 	<section class="section">
 		<div class="x_control-group">
+			<label class="x_control-label">문자타입</label>
+			<div class="x_controls">
+				<label for="sending_method_cta" class="x_inline"><input type="checkbox" name="sending_method[cta]" id="sending_method_cta" value="1" checked="checked"|cond="isset($config->sending_method['cta'])" /> 친구톡</label>
+				<label for="sending_method_sms" class="x_inline"><input type="checkbox" name="sending_method[sms]" id="sending_method_sms" value="1" checked="checked"|cond="isset($config->sending_method['sms'])" /> 문자</label>
+				<p class="x_help-block">알림타입을 결정합니다. 선택한 항목에 따라 사용이 결정됩니다. 친구톡 사용시, 친구톡실패할 경우 해당 번호로 문자메세지를 전송합니다. 친구톡의 경우 coolsms 에서 발급받은 sender_key가 있어야 합니다.</p>
+			</div>
+		</div>
+		<div class="x_control-group">
+			<label class="x_control-label" for="sender_key">sender_key</label>
+			<div class="x_controls">
+				<label class="x_inline">
+					<input type="text" name="sender_key" id="sender_key" value="{$config->sender_key}" />
+				</label>
+				<p class="x_help-block">알림톡신청시 발급받은 센더키를 입력하세요. 샌더키 적용시 알림톡 모듈이 없어도 정상적인 작동을 하게 도와줍니다.</p>
+			</div>
+		</div>
+		<div class="x_control-group">
 			<label class="x_control-label" for="layout_srl">{$lang->layout}</label>
 			<div class="x_controls">
 				<select name="layout_srl" id="layout_srl">

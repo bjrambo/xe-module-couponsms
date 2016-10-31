@@ -10,7 +10,6 @@ class couponsmsController extends couponsms
 	function procCouponsmsSendMessage()
 	{
 		$couponsms_srl = Context::get('couponsms_srl');
-		$member_srl = Context::get('member_srl');
 		$oMemberModel = getModel('member');
 		$logged_info = Context::get('logged_info');
 
@@ -21,14 +20,15 @@ class couponsmsController extends couponsms
 		$couponsms = $output->data;
 		$c_group_srl = unserialize($couponsms->group_srl);
 
-		if (is_array($c_group_srl) && count($c_group_srl) > 0)
+		$config = $oCouponsmsModel->getConfig();
+		if(is_array($c_group_srl) && count($c_group_srl) > 0)
 		{
 			$isGroup = FALSE;
 			$group_list = $oMemberModel->getMemberGroups($logged_info->member_srl);
 
-			foreach ($group_list as $group_srl => &$group_title)
+			foreach($group_list as $group_srl => &$group_title)
 			{
-				if (in_array($group_srl, $c_group_srl))
+				if(in_array($group_srl, $c_group_srl))
 				{
 					$isGroup = TRUE;
 					break;
@@ -37,7 +37,7 @@ class couponsmsController extends couponsms
 		}
 
 		$logged_info = Context::get('logged_info');
-		if(!$logged_info)
+		if(!Context::get('is_logged'))
 		{
 			return new Object(-1, '로그인하지 않은 사용자는 사용할 수 없습니다.');
 		}
@@ -58,7 +58,7 @@ class couponsmsController extends couponsms
 		$args = new stdClass();
 		$args->couponuser_srl = $randomnum;
 		$args->couponsms_srl = $couponsms_srl;
-		$args->member_srl = $member_srl;
+		$args->member_srl = $logged_info->member_srl;
 		$selected_date = date('Ymd');
 		$term_regdate = date('Ymd', strtotime($selected_date . '+' . $couponsms->term_regdate . ' day'));
 		$args->term_regdate = $term_regdate;
@@ -75,7 +75,7 @@ class couponsmsController extends couponsms
 유효기간 : '.zdate($term_regdate, 'Y년m월d일 ').'까지';
 			$title = Context::getSiteTitle().'에서 보낸 쿠폰입니다.';
 
-			$send_massage = self::sendMessage($phone_number, $couponsms->phone_number, $content, $title);
+			$send_massage = self::sendMessage($phone_number, $couponsms->phone_number, $content, $title, $config);
 			if($send_massage == '0000')
 			{
 				$setting_args = new stdClass();
@@ -116,7 +116,7 @@ class couponsmsController extends couponsms
 		}
 	}
 
-	public static function sendMessage($phone_number, $r_number, $content, $title)
+	public static function sendMessage($phone_number, $r_number, $content, $title, $config)
 	{
 		$oTextmessageController = getController('textmessage');
 
@@ -124,7 +124,23 @@ class couponsmsController extends couponsms
 		$args->content = $content;
 		$args->sender_no = $phone_number;
 		$args->recipient_no = $r_number;
-		$args->type = 'sms';
+		$args->subject = $title;
+		if(isset($config->sending_method['cta']) || isset($config->sending_method['sms']) && isset($config->sending_method['cta']))
+		{
+			$args->sender_key = $config->sender_key;
+			$args->type = 'cta';
+			$json_args = new stdClass();
+			$json_args->type = 'cta';
+			$json_args->to = $args->recipient_no;
+			$json_args->text = $args->content;
+			$extension = array($json_args);
+			// $args->extension 이 있어야지 textmessage 모듈에 coolsms.php 파일에서 재대로 실행가능한데, 이 json값이 배열로 들어가야 정상적으로 실행이 가능
+			$args->extension = json_encode($extension);
+		}
+		elseif(isset($config->sending_method['sms']))
+		{
+			$args->type = 'lms';
+		}
 		$output = $oTextmessageController->sendMessage($args, FALSE);
 		if(!$output->toBool())
 		{
