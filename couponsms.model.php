@@ -48,4 +48,33 @@ class couponsmsModel extends couponsms
 
 		return $output;
 	}
+
+	function getFriendTalkSenderKey($args)
+	{
+		$config = $this->getConfig();
+		if($config->sender_key)
+		{
+			if(isset($config->sending_method['cta']) || isset($config->sending_method['sms']) && isset($config->sending_method['cta']))
+			{
+				$args->sender_key = $config->sender_key;
+				$args->type = 'cta';
+				$json_args = new stdClass();
+				$json_args->type = 'cta';
+				$json_args->to = $args->recipient_no;
+				$json_args->text = $args->content;
+				$extension = array($json_args);
+				$args->extension = json_encode($extension);
+			}
+			else
+			{
+				$args->type = 'lms';
+			}
+		}
+		elseif(isset($config->sending_method['sms']))
+		{
+			$args->type = 'lms';
+		}
+
+		return $args;
+	}
 }

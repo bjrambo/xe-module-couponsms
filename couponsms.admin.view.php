@@ -29,7 +29,6 @@ class couponsmsAdminView extends couponsms
 		if($couponsms_srl)
 		{
 			$couponsms_config = $oCouponsmsModel->getCouponConfig($couponsms_srl)->data;
-
 			$couponsms_config_group = unserialize($couponsms_config->group_srl);
 		}
 

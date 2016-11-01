@@ -89,14 +89,14 @@ class couponsmsAdminController extends couponsms
 			$args = new stdClass;
 			$args->old_date = $old_date;
 			$output = executeQuery('couponsms.deleteCouponUse', $args);
+			if(!$output->toBool())
+			{
+				return $output;
+			}
 		}
 		else
 		{
 			return new Object(-1, '한달 이후의 데이터만 삭제할 수 있습니다.');
-		}
-		if(!$output->toBool())
-		{
-			return $output;
 		}
 
 		if($old_date)
