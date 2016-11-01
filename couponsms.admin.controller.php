@@ -69,6 +69,7 @@ class couponsmsAdminController extends couponsms
 		$config->skin = $obj->skin;
 		$config->sending_method = $obj->sending_method;
 		$config->sender_key = $obj->sender_key;
+		$config->variable_name = $obj->variable_name;
 		$this->setMessage('success_updated');
 
 		$oModuleController->updateModuleConfig('couponsms', $config);

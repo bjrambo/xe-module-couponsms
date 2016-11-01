@@ -43,6 +43,17 @@ class couponsmsAdminView extends couponsms
 		$oLayoutModel = getModel('layout');
 		$oCouponsmsModel = getModel('couponsms');
 
+		$member_config = getModel('member')->getMemberConfig();
+		$variable_name = array();
+		foreach($member_config->signupForm as $item)
+		{
+			if($item->type == 'tel')
+			{
+				$variable_name[] = $item->name;
+			}
+		}
+		Context::set('variable_name', $variable_name);
+
 		$config = $oCouponsmsModel->getConfig();
 		Context::set('config', $config);
 		$layout_list = $oLayoutModel->getLayoutList();

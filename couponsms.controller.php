@@ -8,13 +8,26 @@ class couponsmsController extends couponsms
 
 	function procCouponsmsSendMessage()
 	{
-		$couponsms_srl = Context::get('couponsms_srl');
 		$oMemberModel = getModel('member');
-		$logged_info = Context::get('logged_info');
-
-		$phone_number = $logged_info->phone[0] . '-' . $logged_info->phone[1] . '-' . $logged_info->phone[2];
-
 		$oCouponsmsModel = getModel('couponsms');
+		$logged_info = Context::get('logged_info');
+		$couponsms_srl = Context::get('couponsms_srl');
+
+		$config = $oCouponsmsModel->getConfig();
+
+		if($config->variable_name)
+		{
+			$phone_number = $logged_info->{$config->variable_name}[0] . '-' . $logged_info->{$config->variable_name}[1] . '-' . $logged_info->{$config->variable_name}[2];
+			if(!$phone_number)
+			{
+				return new Object(-1, '회원정보에서 휴대전화번호를 설정하지 않으셨습니다.');
+			}
+		}
+		else
+		{
+			return new Object(-1, '설정에서 전화번호변수를 설정해야 합니다. 관리자에게 문의해주시기 바랍니다.');
+		}
+
 		$output = $oCouponsmsModel->getCouponConfig($couponsms_srl);
 		$couponsms = $output->data;
 		$c_group_srl = unserialize($couponsms->group_srl);
