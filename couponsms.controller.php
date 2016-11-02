@@ -76,6 +76,16 @@ class couponsmsController extends couponsms
 		$args->regdate = date('YmdHis');
 		$args->title = $couponsms->title;
 
+		$couponsms_data = $oCouponsmsModel->getTodayCouponByMemberSrl($logged_info->member_srl, $couponsms_srl, $couponsms->term_regdate);
+		if(!$couponsms_data->toBool())
+		{
+			return $couponsms_data;
+		}
+
+		if(count($couponsms_data->data) >= 1)
+		{
+			return new Object(-1, $couponsms->term_regdate.'일 이내 쿠폰을 더 이상 발급할 수 없습니다.');
+		}
 		$output = executeQuery('couponsms.insertCouponUser', $args);
 		if ($output->toBool())
 		{
@@ -87,7 +97,7 @@ class couponsmsController extends couponsms
 			$title = Context::getSiteTitle().'에서 보낸 쿠폰입니다.';
 
 			$send_massage = self::sendMessage($phone_number, $couponsms->phone_number, $content, $title);
-			if($send_massage->toBool())
+			if($send_massage == true)
 			{
 				$setting_args = new stdClass();
 				$setting_args->couponuser_srl = $args->couponuser_srl;
@@ -140,7 +150,7 @@ class couponsmsController extends couponsms
 		$output = $oTextmessageController->sendMessage($args, FALSE);
 		if(!$output->toBool())
 		{
-			return $output;
+			return false;
 		}
 		return true;
 	}

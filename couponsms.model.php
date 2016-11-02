@@ -77,4 +77,23 @@ class couponsmsModel extends couponsms
 
 		return $args;
 	}
+
+	function getTodayCouponByMemberSrl($member_srl, $couponsms_srl, $days = null)
+	{
+		if(!$couponsms_srl)
+		{
+			return false;
+		}
+
+		$args = new stdClass();
+		$args->member_srl = $member_srl;
+		$args->couponsms_srl = $couponsms_srl;
+		$args->today_regdate = date('Ymd');
+		$args->term_regdate = date('Ymd', strtotime($args->today_regdate . '+' . $days . ' day'));
+
+
+		$output = executeQueryArray('couponsms.getTodayCouponByMemberSrl', $args);
+
+		return $output;
+	}
 }
