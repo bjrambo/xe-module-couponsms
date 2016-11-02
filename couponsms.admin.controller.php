@@ -63,10 +63,15 @@ class couponsmsAdminController extends couponsms
 	{
 		$oModuleController = getController('module');
 		$obj = Context::getRequestVars();
+
 		$config = new stdClass();
 		$config->layout_srl = $obj->layout_srl;
 		$config->skin = $obj->skin;
+		$config->sending_method = $obj->sending_method;
+		$config->sender_key = $obj->sender_key;
+		$config->variable_name = $obj->variable_name;
 		$this->setMessage('success_updated');
+
 		$oModuleController->updateModuleConfig('couponsms', $config);
 		if(!in_array(Context::getRequestMethod(),array('XMLRPC','JSON')))
 		{
@@ -85,14 +90,14 @@ class couponsmsAdminController extends couponsms
 			$args = new stdClass;
 			$args->old_date = $old_date;
 			$output = executeQuery('couponsms.deleteCouponUse', $args);
+			if(!$output->toBool())
+			{
+				return $output;
+			}
 		}
 		else
 		{
 			return new Object(-1, '한달 이후의 데이터만 삭제할 수 있습니다.');
-		}
-		if(!$output->toBool())
-		{
-			return $output;
 		}
 
 		if($old_date)

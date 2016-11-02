@@ -29,7 +29,6 @@ class couponsmsAdminView extends couponsms
 		if($couponsms_srl)
 		{
 			$couponsms_config = $oCouponsmsModel->getCouponConfig($couponsms_srl)->data;
-
 			$couponsms_config_group = unserialize($couponsms_config->group_srl);
 		}
 
@@ -43,6 +42,17 @@ class couponsmsAdminView extends couponsms
 		$oModuleModel = getModel('module');
 		$oLayoutModel = getModel('layout');
 		$oCouponsmsModel = getModel('couponsms');
+
+		$member_config = getModel('member')->getMemberConfig();
+		$variable_name = array();
+		foreach($member_config->signupForm as $item)
+		{
+			if($item->type == 'tel')
+			{
+				$variable_name[] = $item->name;
+			}
+		}
+		Context::set('variable_name', $variable_name);
 
 		$config = $oCouponsmsModel->getConfig();
 		Context::set('config', $config);

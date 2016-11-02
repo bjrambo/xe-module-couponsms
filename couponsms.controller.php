@@ -4,31 +4,42 @@ class couponsmsController extends couponsms
 {
 	function init()
 	{
-
 	}
 
 	function procCouponsmsSendMessage()
 	{
-		$couponsms_srl = Context::get('couponsms_srl');
-		$member_srl = Context::get('member_srl');
 		$oMemberModel = getModel('member');
-		$logged_info = Context::get('logged_info');
-
-		$phone_number = $logged_info->phone[0] . '-' . $logged_info->phone[1] . '-' . $logged_info->phone[2];
-
 		$oCouponsmsModel = getModel('couponsms');
+		$logged_info = Context::get('logged_info');
+		$couponsms_srl = Context::get('couponsms_srl');
+
+		$config = $oCouponsmsModel->getConfig();
+
+		if($config->variable_name)
+		{
+			$phone_number = $logged_info->{$config->variable_name}[0] . '-' . $logged_info->{$config->variable_name}[1] . '-' . $logged_info->{$config->variable_name}[2];
+			if(!$phone_number)
+			{
+				return new Object(-1, '회원정보에서 휴대전화번호를 설정하지 않으셨습니다.');
+			}
+		}
+		else
+		{
+			return new Object(-1, '설정에서 전화번호변수를 설정해야 합니다. 관리자에게 문의해주시기 바랍니다.');
+		}
+
 		$output = $oCouponsmsModel->getCouponConfig($couponsms_srl);
 		$couponsms = $output->data;
 		$c_group_srl = unserialize($couponsms->group_srl);
 
-		if (is_array($c_group_srl) && count($c_group_srl) > 0)
+		if(is_array($c_group_srl) && count($c_group_srl) > 0)
 		{
 			$isGroup = FALSE;
 			$group_list = $oMemberModel->getMemberGroups($logged_info->member_srl);
 
-			foreach ($group_list as $group_srl => &$group_title)
+			foreach($group_list as $group_srl => &$group_title)
 			{
-				if (in_array($group_srl, $c_group_srl))
+				if(in_array($group_srl, $c_group_srl))
 				{
 					$isGroup = TRUE;
 					break;
@@ -37,7 +48,7 @@ class couponsmsController extends couponsms
 		}
 
 		$logged_info = Context::get('logged_info');
-		if(!$logged_info)
+		if(!Context::get('is_logged'))
 		{
 			return new Object(-1, '로그인하지 않은 사용자는 사용할 수 없습니다.');
 		}
@@ -58,13 +69,23 @@ class couponsmsController extends couponsms
 		$args = new stdClass();
 		$args->couponuser_srl = $randomnum;
 		$args->couponsms_srl = $couponsms_srl;
-		$args->member_srl = $member_srl;
+		$args->member_srl = $logged_info->member_srl;
 		$selected_date = date('Ymd');
 		$term_regdate = date('Ymd', strtotime($selected_date . '+' . $couponsms->term_regdate . ' day'));
 		$args->term_regdate = $term_regdate;
 		$args->regdate = date('YmdHis');
 		$args->title = $couponsms->title;
 
+		$couponsms_data = $oCouponsmsModel->getTodayCouponByMemberSrl($logged_info->member_srl, $couponsms_srl, $couponsms->term_regdate);
+		if(!$couponsms_data->toBool())
+		{
+			return $couponsms_data;
+		}
+
+		if(count($couponsms_data->data) >= 1)
+		{
+			return new Object(-1, $couponsms->term_regdate.'일 이내 쿠폰을 더 이상 발급할 수 없습니다.');
+		}
 		$output = executeQuery('couponsms.insertCouponUser', $args);
 		if ($output->toBool())
 		{
@@ -76,7 +97,7 @@ class couponsmsController extends couponsms
 			$title = Context::getSiteTitle().'에서 보낸 쿠폰입니다.';
 
 			$send_massage = self::sendMessage($phone_number, $couponsms->phone_number, $content, $title);
-			if($send_massage == '0000')
+			if($send_massage == true)
 			{
 				$setting_args = new stdClass();
 				$setting_args->couponuser_srl = $args->couponuser_srl;
@@ -124,11 +145,12 @@ class couponsmsController extends couponsms
 		$args->content = $content;
 		$args->sender_no = $phone_number;
 		$args->recipient_no = $r_number;
-		$args->type = 'sms';
+		$args->subject = $title;
+		$args = getModel('couponsms')->getFriendTalkSenderKey($args);
 		$output = $oTextmessageController->sendMessage($args, FALSE);
 		if(!$output->toBool())
 		{
-			return $output;
+			return false;
 		}
 		return true;
 	}
