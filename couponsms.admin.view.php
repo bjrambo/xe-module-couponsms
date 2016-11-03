@@ -26,12 +26,16 @@ class couponsmsAdminView extends couponsms
 		$oMemberModel = getModel('member');
 		$group_list = $oMemberModel->getGroups();
 
+		$db_info = Context::getDBInfo();
+		$default_url = $db_info->default_url;
+
 		if($couponsms_srl)
 		{
 			$couponsms_config = $oCouponsmsModel->getCouponConfig($couponsms_srl)->data;
 			$couponsms_config_group = unserialize($couponsms_config->group_srl);
 		}
 
+		Context::set('default_url', $default_url);
 		Context::set('couponsms_config_group', $couponsms_config_group);
 		Context::set('couponsms_config', $couponsms_config);
 		Context::set('group_list', $group_list);
