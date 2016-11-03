@@ -11,7 +11,7 @@
 		<a href="{getUrl('', 'module', 'admin', 'act', 'dispCouponsmsAdminIndex')}">시작</a>
 	</li>
 	<li class="x_active"|cond="$act == 'dispCouponsmsAdminCouponInsert'">
-		<a href="{getUrl('', 'module', 'admin', 'act', 'dispCouponsmsAdminCouponInsert')}">옵션 추가</a>
+		<a href="{getUrl('', 'module', 'admin', 'act', 'dispCouponsmsAdminCouponInsert')}"><block cond="!$couponsms_srl">쿠폰 추가</block><block cond="$couponsms_srl">쿠폰 수정</block></block> </a>
 	</li>
 	<li class="x_active"|cond="$act == 'dispCouponsmsAdminSetting'">
 		<a href="{getUrl('', 'module', 'admin', 'act', 'dispCouponsmsAdminSetting')}">세팅</a>
